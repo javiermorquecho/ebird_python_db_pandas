@@ -6,7 +6,7 @@
 
 /CONABIO/ETL
 
-En este directorio se adjuntaron los 2 proyectos (2 directorios, uno por cada proyecto). Más sin embargo, sobre este directorio se pueden agregar más directorios y seguir aprovechando la funcionalidad del entorno
+En este directorio se adjuntan los proyectos, el que tenemos presente es el único: eBird. Creando nuevs directorios, se pueden crear más proyectos.
 
 #### Directorio del proyecto de aves
 
@@ -18,7 +18,7 @@ En este directorio se encuentran los archivos inciales para el funcionamiento de
 
 /CONABIO/ETL/eBird/carga de datos
 
-Este directorio sirvió como ejercicio para conocer las generalidades del proyecto. En él se hace pruebas de la carga y manipulación del archivo txt. De aquí podemos rescatar las generalidades del proyecto, y con ello, entenderlo desde un inicio.
+Este directorio sirvió como ejercicio para conocer las generalidades del proyecto. En él se hace pruebas de la carga y manipulación del archivo txt. De aquí podemos rescatar las generalidades del proyecto, ciertas funciolidades para generar escenarios, pero lo más importante, ayuda a entenderlo desde un inicio.
 
 #### Directorio del proyecto
 
@@ -28,10 +28,11 @@ Este directorio ya contiene una versión estructurada de una solución basada en
 
 El enfoque de la solución, es generar los pasos de manera más sencilla, a manera que se definan variables y con ello, ir procesando cada uno de los pasos del proceso.
 
-Dentro de este directorio contamos con las siguientes clases: Db_operations, que realiza todas las operaciones a BD.
-Manager, que centraliza las operaciones repetitivas de las demás clases.
-TXT_data, que tiene las operaciones con el CSV. Dentro de este archivo se incorporará la funcionalidad de los pandas.
-base_stuff.py y el directorio lib. Aún no tienen uso.
+Dentro de este directorio contamos con las siguientes clases: 
+- **Db_operations**, que realiza todas las operaciones a BD.
+- **Manager**, que centraliza las operaciones repetitivas de las demás clases.
+- **TXT_data**, que tiene las operaciones con el CSV. Dentro de este archivo se incorporará la funcionalidad de los pandas.
+- **base_stuff** y el directorio **lib**. Aún no tienen uso. La idea es que todas las clases estén en el directorio **lib** y que todo se inluya por medio del **base_stuff**.
 
 ## Archivo de pruebas
 Los volúmenes de información son muy amplios, por lo que se generó un archivo de prueba para simular la carga de datos, aunque en las pruebas locales se han realizado también con archivos completos (hasta 9Gb).
