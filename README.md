@@ -1,3 +1,45 @@
+# Análisis de aves.
+
+## Directorios del proyecto
+
+### Directorio principal
+
+/CONABIO/ETL
+
+En este directorio se adjuntaron los 2 proyectos (2 directorios, uno por cada proyecto). Más sin embargo, sobre este directorio se pueden agregar más directorios y seguir aprovechando la funcionalidad del entorno
+
+#### Directorio del proyecto de aves
+
+/CONABIO/ETL/eBird
+
+En este directorio se encuentran los archivos inciales para el funcionamiento de la plataforma. Estos archivo tienen la extensión .txt, que están formados en tipo CSV, separados por tabludar. Adicional, se visualizan los directorios de los 2 proyectos.
+
+#### Directorio de prueba
+
+/CONABIO/ETL/eBird/carga de datos
+
+Este directorio sirvió como ejercicio para conocer las generalidades del proyecto. En él se hace pruebas de la carga y manipulación del archivo txt. De aquí podemos rescatar las generalidades del proyecto, y con ello, entenderlo desde un inicio.
+
+#### Directorio del proyecto
+
+/CONABIO/ETL/eBird/carga datos v2
+
+Este directorio ya contiene una versión estructurada de una solución basada en resolver el problema, desde el punto de vista de la BD, como primer alcance. La idea es dejar completo el proceso para ver la posibilidad de sustituir uno de esos procesos, pero desde el punto de vista de la manipulación de datos, con los pandas. Dicho proceso, contaría con la manipulación de datos y como resultado, un CSV que al final se cargaría en la ó las tablas de la base de datos.
+
+El enfoque de la solución, es generar los pasos de manera más sencilla, a manera que se definan variables y con ello, ir procesando cada uno de los pasos del proceso.
+
+Dentro de este directorio contamos con las siguientes clases: Db_operations, que realiza todas las operaciones a BD.
+Manager, que centraliza las operaciones repetitivas de las demás clases.
+TXT_data, que tiene las operaciones con el CSV. Dentro de este archivo se incorporará la funcionalidad de los pandas.
+base_stuff.py y el directorio lib. Aún no tienen uso.
+
+## Archivo de pruebas
+Los volúmenes de información son muy amplios, por lo que se generó un archivo de prueba para simular la carga de datos, aunque en las pruebas locales se han realizado también con archivos completos (hasta 9Gb).
+
+# Documentación del entorno de desarrollo
+
+A continuación se detalla la información para el levantamiento del entorno de desarrollo:
+
 # Data Analysis with Pandas and Python
 
 This repo contains the datasets and Jupyter Notebooks for the
