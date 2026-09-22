@@ -10,6 +10,9 @@ class Manager:
     "csv_loaded":"✅ Se cargo la información del CSV en la tabla...",
     "show_afew_paso_rows":"✅ Mostando algunos registros de la tabla temporal Paso...",
     "paso_loaded":"✅ Termina proceso de la tabla Paso...",
+    "wait":"⌛ Esta operación puede tardar...",
+    "wait5":"⌛ Espera 5 segundos, por favor...",
+    "coor_paso_done":"✅ Proceso de coor paso, hecho...",
   }
 
   def __init__():

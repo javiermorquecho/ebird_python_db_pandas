@@ -28,3 +28,7 @@ Complete/baby_names.csv
 Complete/NYC Baby Data.csv
 Complete/NYC Baby Data.xlsx
 
+# CONABIO
+CONABIO/ETL/eBird/ebd_MX_relJun-2025.txt
+CONABIO/ETL/eBird/*.csv
+

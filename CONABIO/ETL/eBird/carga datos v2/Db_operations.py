@@ -170,6 +170,7 @@ class Db_operations:
       connection = self.connect(self, db, True)
       db_info = connection.get_server_info()
       print(f"✅ Success! Connected to MySQL Server version: {db_info}")
+      self.Resolver.showMessage(self.Resolver, "wait", table_name)
       if connection.is_connected():
         cursor = connection.cursor()
         self.set_checks(self, cursor, 0)  # Disable checks
@@ -285,10 +286,12 @@ class Db_operations:
     
     return
 
-  def commit(self, cursor):
+  def commit(self, cursor=None):
     sql = "COMMIT;"
-    #print(f"Query: {sql}")
-    records = self.connection_query(self, cursor, sql, True)
+    if cursor is not None:
+      records = self.connection_query(self, cursor, sql, True)
+    else:
+      self.query(self, sql, None, False)
 
     return
 
@@ -307,9 +310,9 @@ class Db_operations:
   def set_id_values(self, table_name):
     table_name = self.table_prefix+table_name
     sql = f"""SET @rownum:= 0;
-    UPDATE {table_name} SET Id = (SELECT @rownum:= @rownum + 1);
-    COMMIT;"""
+    UPDATE {table_name} SET Id = (SELECT @rownum:= @rownum + 1);"""
     self.query(self, sql, None, True)
+    self.commit(self)
     self.Resolver.showMessage(self.Resolver, "col_id_add_numbers", table_name)
     return
 
@@ -359,24 +362,28 @@ class Db_operations:
 	IF(REPLACE(GROUP_IDENTIFIER,'G','') = '', NULL, REPLACE(GROUP_IDENTIFIER,'G','')) AS GROUP_IDENTIFIER, APPROVED, MRD, gui_snib
 	FROM ebird_{table_name});'''
     self.query(self, sql, None, True)
+    self.commit(self)
     #self.Resolver.showMessage(self.Resolver, "col_indexes_created", table_name)
     return
 
   def set_gi_num(self, table_name):
     sql = f'UPDATE dep_{table_name} SET GI_NUM = 99 WHERE GI_NUM IS NULL OR GI_NUM = 0;'
     self.query(self, sql, None, True)
+    self.commit(self)
     #self.Resolver.showMessage(self.Resolver, "col_indexes_created", table_name)
     return
 
   def set_dep_mrd(self, table_name):
     sql = f'UPDATE dep_{table_name} SET MRD = 0 WHERE APPROVED = 0;'
     self.query(self, sql, None, True)
+    self.commit(self)
     #self.Resolver.showMessage(self.Resolver, "col_indexes_created", table_name)
     return
 
   def set_dep_mrd_2(self, table_name):
     sql = f'UPDATE dep_{table_name} SET MRD = 3 WHERE GI_NUM != 99 AND APPROVED != 0;'
     self.query(self, sql, None, True)
+    self.commit(self)
     #self.Resolver.showMessage(self.Resolver, "col_indexes_created", table_name)
     return
 
@@ -402,12 +409,14 @@ class Db_operations:
   def set_paso_mrd(self, cursor, table_name):
     sql = f'UPDATE dep_{table_name} d, Paso p SET MRD = 2 WHERE d.SEI_NUM = p.SEI_NUM AND APPROVED != 0;'
     records = self.connection_query(self, cursor, sql, True)
+    self.commit(self, cursor)
     #self.Resolver.showMessage(self.Resolver, "col_indexes_created", table_name)
     return
 
   def set_paso_mrd_2(self, cursor, table_name):
     sql = f'UPDATE ebird_{table_name} t, dep_{table_name} d SET t.MRD = d.MRD WHERE t.id = d.id;'
     records = self.connection_query(self, cursor, sql, True)
+    self.commit(self, cursor)
     #self.Resolver.showMessage(self.Resolver, "col_indexes_created", table_name)
     return
 
@@ -444,5 +453,146 @@ class Db_operations:
         self.Resolver.showMessage(self.Resolver, "paso_loaded", table_name)
     return connection
 
-  def taxo_cle_avmx_add_index():
-    
+  def taxo_cle_avmx_add_index(self):
+    sql = f'ALTER TABLE taxones_clements_avesmx ADD INDEX (SCIENTIFIC_NAME), ADD INDEX (CATEGORY);'
+    self.query(self, sql, None, True)
+    #self.Resolver.showMessage(self.Resolver, "col_indexes_created", table_name)
+    return
+
+  def update_taxo_cavmx(self,table_name):
+    sql = f'UPDATE ebird_{table_name} e INNER JOIN taxones_clements_avesmx d ON e.SCIENTIFIC_NAME = d.SCIENTIFIC_NAME AND e.CATEGORY = d.CATEGORY SET e.val_sp = d.val_sp, e.ID_FAM = d.ID_FAM;'
+    self.query(self, sql, None, False)
+    self.commit(self)
+    self.Resolver.showMessage(self.Resolver, "wait", table_name)
+    return
+
+  def add_gui_snib(self):
+    sql = 'DROP TABLE IF EXISTS gui_snib;'
+    self.query(self, sql, None, False)
+    sql = f"CREATE TABLE gui_snib ENGINE=InnoDB SELECT idejemplaroriginal as gui_snib, REPLACE (idejemplaroriginal, 'URN:CornellLabOfOrnithology:EBIRD:OBS','') as LLAVE FROM snib.ejemplar_curatorial e INNER JOIN snib.proyecto p USING(llaveproyecto) WHERE p.proyecto = 'averAves' AND e.estadoregistro = '';"
+    self.query(self, sql, None, False)
+    self.Resolver.showMessage(self.Resolver, "wait", table_name)
+    return
+
+  def llave_operations(self,table_name):
+    sql = f'ALTER TABLE ebird_{table_name} ADD COLUMN (LLAVE bigint);'
+    self.query(self, sql, None, False)
+    sql = f"UPDATE ebird_{table_name} SET LLAVE = REPLACE (GLOBAL_UNIQUE_IDENTIFIER, 'URN:CornellLabOfOrnithology:EBIRD:OBS','');"
+    self.query(self, sql, None, False)
+    self.commit(self)
+    sql = f'ALTER TABLE ebird_{table_name} ADD INDEX (LLAVE);'
+    self.query(self, sql, None, False)
+    sql = 'ALTER TABLE gui_snib ADD INDEX (LLAVE);'
+    self.query(self, sql, None, False)
+    sql = f'UPDATE gui_snib s, ebird_{table_name} d SET d.gui_snib = 2 ""WHERE s.LLAVE = d.LLAVE;'
+    self.query(self, sql, None, False)
+    self.commit(self)
+    return
+
+  def add_snib_version(self,table_name):
+    sql = f'DROP TABLE IF EXISTS SNIB_{table_name};'
+    self.query(self, sql, None, False)
+    sql = f'CREATE TABLE SNIB_{table_name} ENGINE=InnoDB (SELECT * FROM ebird_{table_name} WHERE Approved = 1 AND gui_snib = 1 AND MRD < 3 AND val_sp < 5);'
+    self.query(self, sql, None, False)
+    return
+
+  def add_coord(self,table_name):
+    sql = f'DROP TABLE IF EXISTS coord_{table_name}";'
+    self.query(self, sql, None, False)
+    sql = f'''CREATE TABLE coord_{table_name} (`Id_coord` int(11) NOT NULL AUTO_INCREMENT, 
+    `LATITUDE` double DEFAULT NULL,
+	`LONGITUDE` double DEFAULT NULL,
+	PRIMARY KEY (`Id_coord`)
+    ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;'''
+    self.query(self, sql, None, False)
+    return
+
+  def insert_coord(self,table_name):
+    sql = f'INSERT INTO coord_{table_name} (LATITUDE, LONGITUDE) (SELECT DISTINCT LATITUDE, LONGITUDE FROM ebird_{table_name} ORDER BY LATITUDE desc, LONGITUDE asc);'
+    self.query(self, sql, None, False)
+    self.commit(self)
+    sql = f'''UPDATE ebird_{table_name} t, coord_{table_name} c SET t.id_coord = c.Id_coord 
+	WHERE t.LATITUDE = c.LATITUDE 
+	AND t.LONGITUDE = c.LONGITUDE;'''
+    self.query(self, sql, None, False)
+    self.commit(self)
+    return
+
+  def tmp_coor_paso(self, connection, table_name):
+    try:
+      connection = self.connect(self, db, True)
+      db_info = connection.get_server_info()
+      print(f"✅ Success! Connected to MySQL Server version: {db_info}")
+      if connection.is_connected():
+        cursor = connection.cursor()
+        self.drop_coor_paso_table(self,cursor)
+        self.create_coor_paso_table(self,cursor, table_name)
+        self.add_coor_paso_index(self,cursor)
+        self.insert_coor_paso(self,cursor, table_name)
+        self.Resolver.showMessage(self.Resolver, "coor_paso_done", table_name)
+    except Error as e:
+      print(f"❌ MySQL error: {e}")
+    finally:
+      if 'connection' in locals() and connection.is_connected():
+        cursor.close()
+        #connection.close()
+        self.Resolver.showMessage(self.Resolver, "paso_loaded", table_name)
+    return connection
+
+  def drop_coor_paso_table(self, cursor):
+    sql = f'DROP TEMPORARY TABLE IF EXISTS coorPaso;'
+    records = self.connection_query(self, cursor, sql, True)
+    #self.Resolver.showMessage(self.Resolver, "col_indexes_created", table_name)
+    return
+
+  def create_coor_paso_table(self, cursor, table_name):
+    sql = f'''CREATE TEMPORARY TABLE coorPaso (id_coord int(11),
+	SCIENTIFIC_NAME VARCHAR(100),  
+    STATE VARCHAR(255),
+    OBSERVATION_COUNT_NUM INT(11),
+    OBSERVATIONDATE DATETIME);'''
+    records = self.connection_query(self, cursor, sql, True)
+    #self.Resolver.showMessage(self.Resolver, "col_indexes_created", table_name)
+    return
+
+  def add_coor_paso_index(self, cursor):
+    sql = 'ALTER table coorPaso ADD INDEX (id_coord), ADD INDEX (SCIENTIFIC_NAME);'
+    records = self.connection_query(self, cursor, sql, True)
+    #self.Resolver.showMessage(self.Resolver, "col_indexes_created", table_name)
+    return
+
+  def insert_coor_paso(self, cursor, table_name):
+    sql = f'INSERT INTO coorPaso (SELECT id_coord, SCIENTIFIC_NAME, STATE, OBSERVATION_COUNT_NUM, OBSERVATION_DATE FROM ebird_{table_name} WHERE APPROVED = 1);'
+    records = self.connection_query(self, cursor, sql, True)
+    self.commit(self, cursor)
+    #self.Resolver.showMessage(self.Resolver, "col_indexes_created", table_name)
+    return
+
+  def add_coord_agrup(self,table_name):
+    sql = f'DROP TABLE IF EXISTS coord_agrup_{table_name}";'
+    self.query(self, sql, None, False)
+    sql = f'''CREATE TABLE coord_agrup_{table_name} (`id_coord` int(11) DEFAULT NULL,
+			 `SCIENTIFIC_NAME` varchar(100) DEFAULT NULL,
+			 `STATE` varchar(100) DEFAULT NULL, 
+			`CONTEO_MAX` int(11) DEFAULT NULL, 
+			`FECHA_MIN` datetime DEFAULT NULL, 
+			`FECHA_MAX` datetime DEFAULT NULL,
+			`NUMERO_REGISTROS` INT DEFAULT NULL
+			) ENGINE=InnoDB DEFAULT CHARSET=latin1;'''
+    self.query(self, sql, None, False)
+    return
+
+  def insert_coord_agroup(self,table_name):
+    sql = f'''INSERT INTO coord_agrup_{table_name} (
+      SELECT id_coord, SCIENTIFIC_NAME, STATE, MAX(OBSERVATION_COUNT_NUM) AS CONTEO_MAX, 
+        min(OBSERVATIONDATE) as FECHA_MIN, max(OBSERVATIONDATE) as FECHA_MAX, COUNT(1) as NUMERO_REGISTROS 
+      FROM coorPaso
+      GROUP BY id_coord, SCIENTIFIC_NAME);'''
+    self.query(self, sql, None, False)
+    self.commit(self)
+    return
+
+  def add_ebird_snib(self,table_name):
+    sql = f'Create table ebird_snib{table_name} SELECT * FROM `ebird`.`ebird_{table_name}` e WHERE e.APPROVED = 1 AND e.gui_snib = 1 AND e.MRD <3 AND e.val_sp <5;'
+    self.query(self, sql, None, False)
+    return
