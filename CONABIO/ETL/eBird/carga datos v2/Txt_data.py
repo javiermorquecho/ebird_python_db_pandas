@@ -1,4 +1,5 @@
 import pandas as pd
+from Manager import Manager
 
 class Txt_data:
   src_txt = "" #src txt file
@@ -23,12 +24,14 @@ class Txt_data:
     "USFWS CODE": str,
     "PROJECT IDENTIFIERS": str,
   }
+  Manager = Manager
     
   def __init__(self, txt, sep, size ):
     self.src_txt = txt
     self.src_sep = sep
     self.chunk_size = size
-    print(f"Init done with src:{self.src_txt}")
+    self.Manager.showMessage(self.Manager, "init_class_txt")
+    # print(f"Init done with src:{self.src_txt}")
 
   def get_headers(self, src=None):
     if src is None:
