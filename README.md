@@ -39,7 +39,39 @@ Los volúmenes de información son muy amplios, por lo que se generó un archivo
 
 # Documentación del entorno de desarrollo
 
-A continuación se detalla la información para el levantamiento del entorno de desarrollo:
+A continuación se detalla la información para el levantamiento del entorno de desarrollo.
+
+## Instalación del servidor
+
+La documentación se refiere a la instalación de Uv y posteriormente a correr la plataforma. En relación a correr la plataforma de Jupyter Lab, se realiza de manera diferente, debido a que tenemos un servidor.
+
+Lo normal es instalar el gestor de paquetes de Python, UV:
+
+https://docs.astral.sh/uv/getting-started/installation/
+
+Después hacer el clone del repo:
+
+git clone https://github.com/javiermorquecho/ebird_python_db_pandas.git
+
+Desde el directorio:
+
+cd ebird_python_db_pandas/ 
+
+Sincronizamos:
+
+uv sync
+
+Instalamos jupyter-lab para tener comandos de la consola:
+
+uv tool install jupyterlab --with pip 
+
+Corremos Jupyter Lab para que se visualice desde el servidor:
+
+jupyter-lab --no-browser --ip=0.0.0.0
+
+Del resultado de la ejecución obtenermos el token y con ese accedemos al proyecto. Usaríamos una URL como la siguiente:
+
+http://172.16.1.248:8888/lab?token=7b002ffa75b15e448d4985d00194c7b4be57010fcdca5c94 
 
 # Data Analysis with Pandas and Python
 
